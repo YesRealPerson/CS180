@@ -7,8 +7,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <title>Confluxes/CS180/P0</title>
+    <link rel="icon" href="./favicon.ico">
 </head>
-
+<div id="enlarge" style="display: none;">
+</div>
 <body>
     <header>
         Confluxes // CS180
@@ -17,6 +20,9 @@
         <h2>Project 0</h2>
         <a href="./index.html">Home</a>
     </nav>
+    <h3>Hello</h3>
+    Nothing too much to say here. <br/>
+    <i>Click on any image to enlarge!</i>
     <h3>
         Part 1: Selfie: The Wrong Way vs. The Right Way
     </h3>
@@ -64,5 +70,20 @@
 <footer>
     Hello!!! ᕕ( ᐛ )ᕗ
 </footer>
+<script>
+    images = document.getElementsByTagName("img");
+    enlarge = document.getElementById("enlarge");
+    srcs = []
+    for(let i = 0; i < images.length; i++){
+        srcs.push(images[i].src)
+        images[i].addEventListener("click", e => {
+            enlarge.innerHTML = "<img src="+srcs[i]+"/>";
+            enlarge.style.display = "flex";
+        })
+    }
 
+    enlarge.addEventListener("click", e => {
+        enlarge.style.display = "none"
+    })
+</script>
 </html>
