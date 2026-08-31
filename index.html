@@ -26,10 +26,12 @@
             Something something blah blah blah filler text lorum ipsum or something. Profound words...
         </div>
     </div>
-    <div id="banner">
-        <h1>Truly the most miserable website ever</h1>
+    <div id="bannerContainer">
+        <div id="banner" style="max-width: 65%; border-radius: 25px;">
+            <h1 id="bannertext" class="transition">Truly the most miserable website ever</h1>
+        </div>
     </div>
-    <h2>
+    <h2 style="margin-top: 850px;">
         Projects <img style="height: 1.5rem;" src="./moon.svg" />
     </h2>
     <div class="projects">
@@ -38,7 +40,7 @@
                 Project 0
             </h2>
             <div>
-                Becoming Friends with Your Camera 
+                Becoming Friends with Your Camera
             </div>
             <a href="./project0.html">
                 Read More
@@ -53,7 +55,7 @@
                 Project 1
             </h2>
             <div>
-                Images of the Russian Empire — Colorizing the Prokudin-Gorskii Photo Collection 
+                Images of the Russian Empire — Colorizing the Prokudin-Gorskii Photo Collection
             </div>
             <a href="./notready.html">
                 Read More
@@ -68,7 +70,7 @@
                 Project 2
             </h2>
             <div>
-                Fun with Filters and Frequencies 
+                Fun with Filters and Frequencies
             </div>
             <a href="./notready.html">
                 Read More
@@ -130,4 +132,42 @@
 <footer>
     Hello!!! ᕕ( ᐛ )ᕗ
 </footer>
+<script>
+    words = ["Truly the most miserable website ever", "I shamelessly stole this design", "I dislike the company this website is based on", "Bespoke human made spaghetti code", "This is some placeholder text", "I need an internship", "I heart coding"]
+    index = 1;
+    len = words.length;
+    text = document.getElementById("bannertext");
+    const lmao = (x) => {
+        y = 270 / Math.PI * Math.atan(x / 200)
+        if (y > 100) {
+            return 100
+        }
+        return y
+    }
+
+    const textLoop = async () => {
+        while (true) {
+            text.className = "transition hidden"
+            await new Promise(resolve => setTimeout(resolve, 650));
+            text.innerText = words[index++]
+            if (index >= len) {
+                index = 0;
+            }
+            text.className = "transition visible"
+            await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+    }
+    textLoop()
+    
+    banner = document.getElementById("banner")
+    document.addEventListener("scroll", e => {
+        y = lmao(window.scrollY)
+        z = (100-y)*(25/100)
+        if(y < 65) y = 65;
+        console.log(z)
+        banner.style.maxWidth = y+"%" 
+        banner.style.borderRadius = z+"px"
+    })
+</script>
+
 </html>
