@@ -77,7 +77,7 @@
     for(let i = 0; i < images.length; i++){
         srcs.push(images[i].src)
         images[i].addEventListener("click", e => {
-            enlarge.innerHTML = "<img src="+srcs[i]+"/>";
+            enlarge.innerHTML = "<img src=\""+srcs[i]+"\"/>";
             enlarge.style.display = "flex";
         })
     }
