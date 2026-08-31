@@ -157,8 +157,8 @@ footer {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 50px;
-    margin-top: 100px;
+    padding-top: 100px;
+    padding-bottom: 100px;
 }
 
 .hidden {
@@ -192,4 +192,25 @@ footer {
     width: auto;
     max-height: 95%;
     max-width: 95%;
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    70% {
+        transform: rotate(360deg);
+    }
+    100%{
+        transform: rotate(360deg);
+    }
+}
+footer:hover > div{
+    animation-play-state: running;
+}
+footer > div{
+    display: block;
+    animation: rotate 1s linear infinite;
+    animation-play-state: paused;
+    animation-timing-function: ease-in;
 }
