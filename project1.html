@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./blog.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <title>Confluxes/CS180/P1</title>
+    <link rel="icon" href="./favicon.ico">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/katex.min.css"
+        integrity="sha384-2dNi/m6JtSiviznrOIZ5fTiZ5As0In2QwkuXSgoqcQtCNplvJAbt+jveeN+8en73" crossorigin="anonymous">
+
+    <!-- The loading of KaTeX is deferred to speed up page rendering -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/katex.min.js"
+        integrity="sha384-TTF8eEsEKInX2meLzP5V1z/npGYIElXYGksx93f0qBZHu6IL3PdzVB8objytx+TR"
+        crossorigin="anonymous"></script>
+
+    <!-- To automatically render math in text elements, include the auto-render extension: -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/contrib/auto-render.min.js"
+        integrity="sha384-bjyGPfbij8/NDKJhSGZNP/khQVgtHUE5exjm4Ydllo42FwIgYsdLO2lXGmRBf5Mz" crossorigin="anonymous"
+        onload="renderMathInElement(document.body);"></script>
+</head>
+<div id="enlarge" style="display: none;">
+</div>
+
+<body>
+    <header>
+        Confluxes // CS180
+    </header>
+    <a href="./index.html">Home</a>
+    <nav>
+        <h2>Project 1</h2>
+    </nav>
+    <h3>Background</h3>
+    The Prokudin-Gorskii photo collection are a series of photographs taken around 1907 using blue, green and red color
+    filters.
+    The idea being that the three negatives could be combined to produce a full color image.
+    While there was no such technology at the time in the time of the modern computer we can use technology (and some
+    math) to fulfill his vision!
+    <br /><br />
+
+    <i>Click on any image to enlarge!</i>
+    <br /><br />
+    <i>For coordinates (0,0) is the top-left of the image with positive directions being down and right</i>
+    <h3>
+        The negatives
+    </h3>
+
+    Each image is a series of three different images taken with blue, green then red filters.
+    Below is a series of images represented as three grayscale images representing the three channels needed to combine
+    to create a color image.
+    <br /><br />
+    <i>Note that these are downscaled versions of the images used for the final images.</i>
+    <br />
+    <div class="gallery">
+        <div>
+            <img src="./Project1/cathedral.jpg">
+        </div>
+        <div>
+            <img src="./Project1/monastery.jpg">
+        </div>
+        <div>
+            <img src="./Project1/tobolsk.jpg">
+        </div>
+    </div>
+    <h3>
+        Just try it!
+    </h3>
+    From here we can quite easily use some small bits of code to split the image into thirds and simply split the
+    grayscale values into their respective RGB channels.
+    <div class="gallery">
+        <div>
+            <img src="./Project1/cathedral-large-raw-g(0, 0)-r(0, 0).jpg">
+        </div>
+        <div>
+            <img src="./Project1/monastery-large-raw-g(0, 0)-r(0, 0).jpg">
+        </div>
+        <div>
+            <img src="./Project1/tobolsk-large-raw-g(0, 0)-r(0, 0).jpg">
+        </div>
+    </div>
+    While they certainly look cool, the result is, unfortunately, definitely not what we wanted as the images look very
+    misaligned.
+    <h3>
+        Alignment
+    </h3>
+    To align the images we need some way to score how similar our images are to each other.
+    One such metric is the <b>Normalized Cross-Correlation</b> or NCC.
+    If we think of our iamges as vectors we can compare any two vectors by the dot product.
+    Which would be 0 for orthogonal vectors, |a||b| for vectors that are scalar multiples in the same direction, and negative in the opposite direction. 
+    While this works we can make this a bit cleaner by normalizing our vectors by centering their distribution around 0 by subtracting their means and normalizing them.
+    This bounds the result of the dot product to -1, 1 and more accurately compares similar vectors that may be offset by a mean.
+    $$\frac{(a-\bar{a})\cdot(b-\bar{b})}{{|a-\bar{a}|}{|b-\bar{b}|}}$$
+    From here we need to start searching for alignments.
+    For a simple approach we can just serach across a small pixel range of offsets such as -12 to 12 pixels on the x and y axis using downscaled images.
+    For this we use a small subsection of the image from the center and compare the red and blue channels to the green channel.
+    <br/><br/>
+    <b>Single-scale alignment</b>
+    <div class="gallery">
+        <div>
+            <img src="./Project1/cathedral-scale-g(-2, -5)-r(1, 7).jpg">
+            Red (1, 7), Blue (-2, -5)
+        </div>
+        <div>
+            <img src="./Project1/tobolsk-scale-g(-3, -3)-r(1, 4).jpg">
+            Red (1, 4), Blue (-3, -3)
+        </div>
+        <div>
+            <img src="./Project1/monastery-scale-g(-2, 3)-r(1, 6).jpg">
+            Red (1, 6), Blue (-2, 3)
+        </div>
+    </div>
+    The results look great.
+    However, trying a larger window on the full size images takes an incredibly long time. 
+    Getting a good result on a full size image took my computer about 10 minutes!
+    <h3>(Faster) Allignment</h3>
+    So how can we get faster?<br/><br/>
+    Notably, the smaller scale images look pretty well aligned already, so why not use this?
+    We can use these as guides for the larger scale images!<br/><br/>
+    We start by downscaling the images and finding a good alignment at that level.
+    This gives us a starting point for a more accurate alignment at a slightly less downscaled image.<br/><br/>
+    After some trial and error I found 1/16th to be a good starting point. 
+    I also made it so the displacement range shrinks as we reach larger images.
+    This reduces the run time and leads to minimal consequences as by the time we reach 1/4th scale, for example, it's likely we're only very slightly adjusting the image.
+    <br/><br/>
+    This brings us to the final results! I think they're pretty good.<br/><br/>
+    <b>Multi-scale pyramid alignment </b>
+    <div class="gallery">
+        <div>
+            <img src="./Project1/cathedral-large-pyramid-g(-22, -50)-r(8, 67).jpg">
+            Red (8, 67), Blue (-22, -50)
+        </div>
+        <div>
+            <img src="./Project1/choice1-pyramid-g(-23, 37)-r(20, 45).jpg">
+            Red (20, 45), Blue (-23, 37)
+        </div>
+        <div>
+            <img src="./Project1/choice2-pyramid-g(-8, -9)-r(6, 53).jpg">
+            Red (6, 53), Blue (-8, -9)
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project1/choice3-pyramid-g(-10, -63)-r(-2, 76).jpg">
+            Red (2, 76), Blue (-10, -63)
+        </div>
+        <div>
+            <img src="./Project1/church-pyramid-g(-4, -25)-r(-8, 33).jpg">
+            Red (-8, 33), Blue (-4, -25)
+        </div>
+        <div>
+            <img src="./Project1/emir-pyramid-g(-24, -48)-r(18, 58).jpg">
+            Red (18, 58), Blue (-24, -48)
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project1/harvesters-pyramid-g(-17, -59)-r(-3, 64).jpg">
+            Red (-3, 64), Blue (-17, -59)
+        </div>
+        <div>
+            <img src="./Project1/icon-pyramid-g(-18, -41)-r(5, 49).jpg">
+            Red (5, 49), Blue (-18, -41)
+        </div>
+        <div>
+            <img src="./Project1/ilemselga-pyramid-g(-7, -41)-r(4, 91).jpg">
+            Red (4, 91), Blue (-7, -41)
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project1/melons-pyramid-g(-10, -84)-r(4, 96).jpg">
+            Red (4, 96), Blue (-10, -84)
+        </div>
+        <div>
+            <img src="./Project1/monastery-large-pyramid-g(-16, 27)-r(7, 59).jpg">
+            Red (7, 59), Blue (-16, 27)
+        </div>
+        <div>
+            <img src="./Project1/religous_painting-pyramid-g(-4, -28)-r(3, 42).jpg">
+            Red (3, 42), Blue (-4, -28)
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project1/self_portrait-pyramid-g(-29, -78)-r(8, 98).jpg">
+            Red (8, 98), Blue (-29, -78)
+        </div>
+        <div>
+            <img src="./Project1/siren-pyramid-g(5, -49)-r(-19, 47).jpg">
+            Red (-19, 47), Blue (5, -49)
+        </div>
+        <div>
+            <img src="./Project1/three_generations-pyramid-g(-14, -51)-r(-3, 59).jpg">
+            Red (-3, 59), Blue (-14, -51)
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project1/tobolsk-large-pyramid-g(-25, -29)-r(5, 40).jpg">
+            Red (5, 40), Blue (-25, --29)
+        </div>
+        <div>
+            <img src="./Project1/wharf-pyramid-g(7, -15)-r(-9, 67).jpg">
+            Red (-9, 67), Blue (-7, -15)
+        </div>
+    </div>
+</body>
+<footer>
+    <div>ᕕ( ᐛ )ᕗ&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;ᕕ( ᐛ )ᕗ</div>
+    <span style="position: absolute; display: block; width: 100%; text-align: center;">Hello!!!</span>
+</footer>
+<script>
+    images = document.getElementsByTagName("img");
+    enlarge = document.getElementById("enlarge");
+    srcs = []
+    for (let i = 0; i < images.length; i++) {
+        srcs.push(images[i].src)
+        images[i].addEventListener("click", e => {
+            enlarge.innerHTML = "<img src=\"" + srcs[i] + "\"/>";
+            enlarge.style.display = "flex";
+        })
+    }
+
+    enlarge.addEventListener("click", e => {
+        enlarge.style.display = "none"
+    })
+</script>
+
+
+</html>
