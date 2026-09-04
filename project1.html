@@ -90,14 +90,14 @@
     </h3>
     To align the images we need some way to score how similar our images are to each other.
     One such metric is the <b>Normalized Cross-Correlation</b> or NCC.
-    If we think of our iamges as vectors we can compare any two vectors by the dot product.
+    If we think of our images as vectors we can compare any two vectors by the dot product.
     Which would be 0 for orthogonal vectors, |a||b| for vectors that are scalar multiples in the same direction, and negative in the opposite direction. 
     While this works we can make this a bit cleaner by normalizing our vectors by centering their distribution around 0 by subtracting their means and normalizing them.
     This bounds the result of the dot product to -1, 1 and more accurately compares similar vectors that may be offset by a mean.
     $$\frac{(a-\bar{a})\cdot(b-\bar{b})}{{|a-\bar{a}|}{|b-\bar{b}|}}$$
     From here we need to start searching for alignments.
-    For a simple approach we can just serach across a small pixel range of offsets such as -12 to 12 pixels on the x and y axis using downscaled images.
-    For this we use a small subsection of the image from the center and compare the red and blue channels to the green channel.
+    For this we use a small subsection of the image from the center and compare the red and blue channels to the green channel (I used a window 30% the height of the image).
+    For a simple approach we can shift the window to serach across a small pixel range of offsets such as -12 to 12 pixels on the x and y axis.
     <br/><br/>
     <b>Single-scale alignment</b>
     <div class="gallery">
