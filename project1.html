@@ -120,10 +120,9 @@
     <h3>(Faster) Allignment</h3>
     So how can we get faster?<br/><br/>
     Notably, the smaller scale images look pretty well aligned already, so why not use this?
-    We can use these as guides for the larger scale images!<br/><br/>
-    We start by downscaling the images and finding a good alignment at that level.
-    This gives us a starting point for a more accurate alignment at a slightly less downscaled image.<br/><br/>
+    Alignments from the smaller images can be used as guides for the larger scale images!<br/><br/>
     After some trial and error I found 1/16th to be a good starting point. 
+    At which point we double the scale to 1/8 and so on (mathematically this also means the displacement doubles).
     I also made it so the displacement range shrinks as we reach larger images.
     This reduces the run time and leads to minimal consequences as by the time we reach 1/4th scale, for example, it's likely we're only very slightly adjusting the image.
     <br/><br/>
