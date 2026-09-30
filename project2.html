@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./blog.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <title>Confluxes/CS180/P2</title>
+    <link rel="icon" href="./favicon.ico">
+</head>
+<div id="enlarge" style="display: none;">
+</div>
+<body>
+    <header>
+        Confluxes // CS180
+    </header>
+        <a href="./index.html">Home</a>
+    <nav>
+        <h2>Project 2</h2>
+    </nav>
+    <h3>Background</h3>
+    Images (like any signal) can be considered as a sum of frequencies.
+    As a comparison point we can consider audio to be a 1D signal, while a black and white image is a 2D signal.
+    Fast forwarding a little we can construct filters and apply them through convolution.<br/>
+    <i>Click on any image to enlarge!</i>
+    <h3>
+        Part 1.1: Convolutions from scratch
+    </h3>
+    To begin we actually need to be able to apply the filters we create, to do this I've written a convolution function.
+    Visually the outputs of my function is identical to an existing convolution function from the SciPy library.
+    Notably however it takes 40x longer (4s vs about 100ms).
+    <br/><br>Original Image
+    <div class="gallery">
+        <div>
+            <img src="./Project2/task1.1.jpg">
+        </div>
+    </div>
+    My convolution
+    <div class="gallery">
+        <div>
+            <img src="./Project2/1.1/boxfilter.jpg">
+            box filter
+        </div>
+        <div>
+            <img src="./Project2/1.1/Dx.jpg">
+            X difference
+        </div>
+        <div>
+            <img src="./Project2/1.1/Dy.jpg">
+            Y difference
+        </div>
+    </div>
+    SciPy convolution
+    <div class="gallery">
+        <div>
+            <img src="./Project2/1.1/boxfilterSP.jpg">
+            box filter
+        </div>
+        <div>
+            <img src="./Project2/1.1/DxSP.jpg">
+            X difference
+        </div>
+        <div>
+            <img src="./Project2/1.1/DySP.jpg">
+            Y difference
+        </div>
+    </div>
+    <h3>
+        Part 1.2: Finite Difference & Gradient Magnitude
+    </h3>
+    We can use the output of the finite difference operators to find find edges across the x and y coordinates, using these we can combine them to find the edges of the image as a whole!
+    Notably however though there is a lot of noise due to high frequency information in the image, to fix this I limited the output to those greater than 70 (on a scale of 0-255).
+    <div class="gallery">
+        <div>
+            <img src="./Project2/1.2/Dx.jpg">
+            X difference
+        </div>
+        <div>
+            <img src="./Project2/1.2/Dy.jpg">
+            Y difference
+        </div>
+        <div>
+            <img src="./Project2/1.2/gradient.jpg">
+            Gradient Mag.
+        </div>
+    </div>
+    <h3>
+        Part 1.3: Derivative of Gaussian (DoG) Filter
+    </h3>
+    This noise can be reduced heavily by smoothing the image beforehand by applying a gaussian kernel using convolution.
+    This is analogous to a low pass filter. Notably this results in a fall off of the intensity of edges but it greatly reduces the amount of visible noise in the final graident magnitude image.
+    <div class="gallery">
+        <div>
+            <img src="./Project2/1.3/dog.jpg">
+            Magnitude
+        </div>
+        <div>
+            <img src="./Project2/1.3/dogx.jpg">
+            Dx
+        </div>
+        <div>
+            <img src="./Project2/1.3/dogy.jpg">
+            Dy
+        </div>
+    </div>
+    <h3>
+        Part 2.1: Image sharpening
+    </h3>
+    Notably high frequency information is associated with sharpness, as sudden large changes in pixel values tend to signify an edge.
+    If we subtract the low-pass output from the original, a high-pass image is created instead.
+    Adding this high pass image back to the original creates a sharpened image.
+    Using this idea the "unsharp" mask filter can be constructed. 
+    If we understand a sharpend image as f+(f-f*g)=f+f-f*g=f(1+1-g).
+    Which isn't entirely mathematically correct but works as a good analogy, meaning that we can apply sharpening by applying a filter that is a unit imulse subtracted by a gaussian.
+    <div class="gallery">
+        <div>
+            <img src="./Project2/2.1/taj.jpg">
+            sharpened
+        </div>
+        <div>
+            <img src="./Project2/taj.jpg">
+            original
+        </div>
+    </div>
+    Additionally, you can make an image even sharper by multiplying the amount of the high frequency we add back.
+    <div class="gallery">
+        <div>
+            <img src="./Project2/blurry.jpg">
+            original
+        </div>
+        <div>
+            <img src="./Project2/2.1/gundam1x.jpg">
+            1x sharp
+        </div>
+        <div>
+            <img src="./Project2/2.1/gundam2x.jpg">
+            2x sharp
+        </div>
+        <div>
+            <img src="./Project2/2.1/gundam3x.jpg">
+            3x sharp
+        </div>
+        <div>
+            <img src="./Project2/2.1/gundam5x.jpg">
+            5x sharp
+        </div>
+    </div>
+    <h3>
+        Part 2.2: Hybrid images
+    </h3>
+    Using this idea of high and low frequencies it's possible to make the same image look differently depending on how closely you look.
+    We can use this to create hybrid images by combining the high frequency information from one image and the low frequency information from another.
+    <div class="gallery">
+        <div>
+            <img src="./Project2/2.2/hybrid0.jpg">
+            Combined
+        </div>
+        <div>
+            <img src="./Project2/DerekPicture.jpg">
+            Source 1
+        </div>
+        <div>
+            <img src="./Project2/nutmeg.jpg">
+            Source 2
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project2/2.2/hybrid1.jpg">
+            Combined
+        </div>
+        <div>
+            <img src="./Project2/hybrid2.jpg">
+            Source 1
+        </div>
+        <div>
+            <img src="./Project2/hybrid3.jpg">
+            Source 2
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project2/2.2/hybrid2.jpg">
+            Combined
+        </div>
+        <div>
+            <img src="./Project2/1.jpg">
+            Source 1
+        </div>
+        <div>
+            <img src="./Project2/2.jpg">
+            Source 2
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project2/2.2/1t.jpg">
+            Aligned 1
+        </div>
+        <div>
+            <img src="./Project2/2.2/2t.jpg">
+            Aligned 2
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project2/2.2/fft1.jpg">
+            FFT of 1
+        </div>
+        <div>
+            <img src="./Project2/2.2/fft2.jpg">
+            FFT of 2
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project2/2.2/low.jpg">
+            Low-pass of 1
+        </div>
+        <div>
+            <img src="./Project2/2.2/high.jpg">
+            High-pass of 2
+        </div>
+    </div>
+    <h3>
+        Part 2.3/2.4: Image Blending
+    </h3>
+    <div>
+        Finally, image blending. We can merge two images together by mixing the levels of their features together, but how do we get these feature levels?
+        We can do this with a Laplacian stack. To define this let's start with the Gaussian stack, which is simply the image with a gaussian filter applied n times.
+        Level 0 being the original image, and level 5 being filtered 5 times. 
+        If we subtract Gaussian level n by level n+1 we can effectively compute the features that belong to that frequency range this is level n of the Laplacian stack.
+        Notably this is analogous to a band-pass filter!
+        From here we can mask all the levels of the Laplacian stack and combine them with the other image's stack to create our merged image.
+        Notably however if you write out the addition of our Laplacian stack you can expand it as: M(G0-G1)+...+M(GN-G{N+1}) you might notice that the last band of our frequency range is not included (being G{N+1}) as it is subtracted from the last laplacian level.
+        Therefore to get our final image we mask it and add it to the end of the summation i.e. ...+MG{N+1}. 
+        <br/><br/>You can see the stacks alongside the resultant images below!
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project2/2.3/apple.jpg">
+            Source 1
+        </div>
+        <div>
+            <img src="./Project2/2.3/orange.jpg">
+            Source 2
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project2/2.3/oraplechart.jpg">
+            Stacks
+        </div>
+        <div>
+            <img src="./Project2/2.3/oraple.jpg">
+            Results
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project2/2.3/1.jpg">
+            Source 1
+        </div>
+        <div>
+            <img src="./Project2/2.3/2.jpg">
+            Source 2
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project2/2.3/cats1chart.jpg">
+            Stacks
+        </div>
+        <div>
+            <img src="./Project2/2.3/cats1.jpg">
+            Results
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project2/camera.jpg">
+            Source 1
+        </div>
+        <div>
+            <img src="./Project2/caterpillar.jpg">
+            Source 2
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project2/2.3/camerachart.jpg">
+            Stacks
+        </div>
+        <div>
+            <img src="./Project2/2.3/camera.jpg">
+            Results
+        </div>
+    </div>
+</body>
+<footer>
+    <div>ᕕ( ᐛ )ᕗ&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;ᕕ( ᐛ )ᕗ</div>
+    <span style="position: absolute; display: block; width: 100%; text-align: center;">Hello!!!</span>
+</footer>
+<script>
+    images = document.getElementsByTagName("img");
+    enlarge = document.getElementById("enlarge");
+    srcs = []
+    for(let i = 0; i < images.length; i++){
+        srcs.push(images[i].src)
+        images[i].addEventListener("click", e => {
+            enlarge.innerHTML = "<img src=\""+srcs[i]+"\"/>";
+            enlarge.style.display = "flex";
+        })
+    }
+
+    enlarge.addEventListener("click", e => {
+        enlarge.style.display = "none"
+    })
+</script>
+</html>
