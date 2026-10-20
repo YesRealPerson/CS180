@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./blog.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
+    <title>Confluxes/CS180/P3</title>
+    <link rel="icon" href="./favicon.ico">
+</head>
+<div id="enlarge" style="display: none;">
+</div>
+
+<body>
+    <header>
+        Confluxes // CS180
+    </header>
+    <a href="./index.html">Home</a>
+    <nav>
+        <h2>Project 3</h2>
+    </nav>
+    <h3>Background</h3>
+    Generative AI, as currently controversial as it is, is an extremely process that just a decade ago probably would've
+    seemed impossible in our lifetimes. What kickstarted these great advancements? One such advancement comes in the
+    form of flow matching.<br />
+    <i>Click on any image to enlarge!</i>
+    <h2>Part A: Exploring the Power of Flow Models</h2>
+    To begin we can sort of understand flow matching as the image "flowing" from complete noise to a desired image.
+    This means we need a way to create varying levels of noisy images to properly test our model.
+    We use this using a parameter \(t\) to vary between a pure noise image \(\varepsilon\).
+    Where \(x_1\) is the original image:
+    \[x_t=(1-t)\varepsilon+tx_1\]
+    <h3>
+        1.1 - Noisy Inputs
+    </h3>
+    <div class="gallery">
+        <div>
+            <img src="./Project3/parta/training_inputs.png">
+            An image at \(t=0.25,0.5,0.75\)
+        </div>
+    </div>
+    From here we can start playing with the idea of moving into denoising.
+    Before we try our flow model we can visualize a more traditional approach using Gaussian blurring.
+    <h3>
+        1.2 - Classical Denoising
+    </h3>
+    <div class="gallery">
+        <div>
+            <img src="./Project3/parta/blur_0.25.png">
+            Denoise \(t=0.25\)
+        </div>
+        <div>
+            <img src="./Project3/parta/blur_0.5.png">
+            Denoise \(t=0.5\)
+        </div>
+        <div>
+            <img src="./Project3/parta/blur_0.75.png">
+            Denoise \(t=0.75\)
+        </div>
+    </div>
+    Visually these results are not the greatest. They're still visually noisy and lose a lot of information.
+    Let's move on to our flow model.
+    Flow models predict what is known as the velocity or effectively the difference between the clean image.
+    We can derive this as folows: \[\begin{align}x_t&=(1-t)x_0+tx_1\\ \frac{d}{dt}x_t&=x_1-x_0\end{align}\]
+    Using this understanding we can use the model to predict the velocity at each noise level and jump to the clean
+    image.
+    <h3>
+        1.3 - One Step Denoising
+    </h3>
+    <div class="gallery">
+        <div>
+            <img src="./Project3/parta/one_step_0.25.png">
+            Denoise \(t=0.25\)
+            <img src="./Project3/parta/one_step_0.5.png">
+            Denoise \(t=0.5\)
+            <img src="./Project3/parta/one_step_0.75.png">
+            Denoise \(t=0.75\)
+        </div>
+    </div>
+    This is pretty good, let's take a look at what the model is actually predicting and how it differs from the actual
+    velocity.
+    <h3>1.4 - Visualizing Velocity</h3>
+    <div class="gallery">
+        <div>
+            <img src="./Project3/parta/velocity_original.png">
+            Original Image
+            <img src="./Project3/parta/velocity_0.25.png">
+            Velocity \(t=0.25\)
+            <img src="./Project3/parta/velocity_0.50.png">
+            Velocity \(t=0.5\)
+            <img src="./Project3/parta/velocity_0.75.png">
+            Velocity \(t=0.75\)
+        </div>
+    </div>
+    So while these results look a lot cleaner (practically no noise) we're still losing quite a bit of detail especially
+    for lower values of \(t\).
+    Howver, notably we don't lose a lot of detail when moving from high values of \(t\) to the final image, we can take
+    advantage of this sort of trend by not doing the entire denoise in an entire step. We can iteratively denoise the
+    image using a step size \(h\). This leads us to the equation \[x_{t+h}=x_t+hv_\theta\]
+    <h3>1.5 - Iterative Denoising with Euler Sampling</h3>
+    <div class="gallery">
+        <div>
+            <img src="./Project0/dolly zoom.gif">
+            <b>IMAGE SUCKED REGENERATE BEFORE SUBMISSION!!!</b>
+        </div>
+    </div>
+    If we consider that now we have a model that moves from any level of noise to a clean image, theoretically we should
+    be able to move from a full noise image to a clean image, so let's just try it.
+    <h3>1.6 - Generating Images from Noise</h3>
+    <div class="gallery">
+        <div>
+            <img src="./Project3/parta/conditional_0.png">
+        </div>
+        <div>
+            <img src="./Project3/parta/conditional_1.png">
+        </div>
+        <div>
+            <img src="./Project3/parta/conditional_2.png">
+        </div>
+        <div>
+            <img src="./Project3/parta/conditional_3.png">
+        </div>
+        <div>
+            <img src="./Project3/parta/conditional_4.png">
+        </div>
+    </div>
+    These for the most part are not "realistic" by any means.
+    What I have yet to mention is that our denoising model takes in a condition \(c\) which helps push the model toward
+    particular flows (the velocity from noise to an apple is different than the velocity to an orange).
+    Notably we can notice that the flow will probably gravitate toward the average version of the images its trained
+    upon (after all that's probably the best way to minimize its loss function).
+    Therefore the question becomes how can we focus it more on the condition we want it to?
+    Well if we assume that the predicted velocity is made up of an unconditioned portion and a class specific portion we
+    can write just the class specific portion as the conditioned velocity minus the unconditioned velocity. Which we can
+    then add back to itself to get a velocity that is aimed further at the class manifold. This is known as
+    classifer-free guidance (CFG).\[v_{cfg}=v_c+w(v_c=v_u)\] Where \(w\) is a hyperparameter we can tune as the level of
+    guidance we want. The more guidance the less "creative" the model is.
+    <h3>2.1 - Classifier-Free Guidance (CFG)</h3>
+    <div class="gallery">
+        <div>
+            <img src="./Project3/parta/cfg_0.png">
+        </div>
+        <div>
+            <img src="./Project3/parta/cfg_1.png">
+        </div>
+        <div>
+            <img src="./Project3/parta/cfg_2.png">
+        </div>
+        <div>
+            <img src="./Project3/parta/cfg_3.png">
+        </div>
+        <div>
+            <img src="./Project3/parta/cfg_4.png">
+        </div>
+    </div>
+    <h3>3.1 - Image-to-image editing</h3>
+    From here we can explore some applications of flow models on already clean images. We can start to explore this by starting off by denoising extremely noisy versions of clean images with the same generic prompt.
+    <div class="gallery">
+        <div>
+            <img src="./Project3/parta/edit_campanile.png">
+            <img src="./Project3/parta/edit_hinu.png">
+            <img src="./Project3/parta/edit_squirrel.png">
+        </div>
+    </div>
+    Notably we're able to see how generic details like a tower against a blue sky stick through, or the general robot shifting into white electronics with blue highlights. We can also do a similar process for images that are not photo real such as drawings or digital art. 
+    <div class="gallery">
+        <div>
+            <img src="./Project3/parta/edit_drawing_1.png">
+            <img src="./Project3/parta/edit_drawing_2.png">
+            <img src="./Project3/parta/edit_web_image.png">
+        </div>
+    </div>
+    Here I've made 2 poorly made drawings and a screenshot from the video game Marathon. A notably similar process occurs.
+    <h3>3.2 - Text-Guided Image Editing</h3>
+    Notably, this entire time we've been using the same condition, so what if we tried editing these images using different conditions?
+    <div class="gallery">
+        <div>
+            <img src="./Project3/parta/text_edit_hinu.png">
+            <img src="./Project3/parta/text_edit_campanile.png">
+            <img src="./Project3/parta/text_edit_squirrel.png">
+        </div>
+    </div>
+    While the gundam doesn't turn out very well, I'd say you get pretty good results for the campanile and the squirrel around \(t=0.14\) and \(t=0.25\) respectively.
+    <h3>3.3 - Visual Anagrams</h3>
+    One interesting application that exists is the idea of visual anagrams, images that look like different objects when flipped upside down. The application for this is surprisingly intuitive. If you have two conditions you can create two seperate velocities using the upright and flipped inputs, then simply average the velocities.
+    \[\begin{align}v_1&=v_{cfg}(x_t,t,c_1)\\v_2&=flip(v_{cfg}(flip(x_t),t,c_2))\\v&=(v_1+v_2)/2\end{align}\]
+
+    <div class="gallery">
+        <div>
+            <img src="./Project3/parta/anagram_views_0.png">
+            <img src="./Project3/parta/anagram_views_1.png">
+        </div>
+    </div>
+    When given the correct conditions it works fairly well.
+    <h3>3.4 - Hybrid Images</h3>
+    Borrowing from a previous project we can try and implement hybrid images. There we used the high and low frequency components of a two images to create a single image that looked different from afar. We can apply a similar process to our velocities at each step.
+    \[\begin{align}v_1&=v_{cfg}(x_t,t,c_1)\\v_2&=v_{cfg}(x_t,t,c_2)\\v&=\text{high}(v_1)+\text{low}(v_2)\end{align}\]
+    <div class="gallery">
+        <div>
+            <img src="./Project3/parta/hybrid_0.png">
+            <img src="./Project3/parta/hybrid_0.png" style="height: 100px;">
+            Close up server racks, far away a city
+        </div>
+    </div>
+    <div class="gallery">
+        <div>
+            <img src="./Project3/parta/hybrid_1.png">
+            <img src="./Project3/parta/hybrid_1.png" style="height: 100px;">
+            Close up wires, far away a city through fences
+        </div>
+    </div>
+    <h3>Part B: Flow Matching From Scratch</h3>
+    Now that we've explored how to apply flow matching, let's actually make a flow matching model. We're going to train our model on MNIST (a handwritten digit dataset), and use the U-Net model architecture. 
+    To begin we can start off with a sort of toy case where we fix \(t=0.5\) and train it to directly predict the clean image. Somewhat similarly to our one-step denoise from earlier. Below is a diagram for the model architecture.
+    <div class="gallery">
+        <div>
+            <img src="./Project3/unconditional_arch.png">
+        </div>
+    </div>
+    <h3>1.2</h3>
+    <div class="gallery">
+        <div>
+            <img src="./Project3/partb/add_noise.jpg">
+            Input image at \(t=1.0,0.8,0.6,0.5,0.4,0.2,0.0\)
+        </div>
+    </div>
+    <h3>1.2.1</h3>
+    <div class="gallery">
+        <div>
+            <img src="./Project3/partb/denoise_loss.png">
+            Loss at each iteration <b>FIXME</b>
+            <img src="./Project3/partb/epoch1.jpg">
+            Results after epoch 1
+            <img src="./Project3/partb/epoch5.jpg">
+            Results after epoch 5
+        </div>
+    </div>
+    <h3>1.2.2</h3>
+    Now let's see how the model performs on values of \(t\) it wasn't trained for.
+    <div class="gallery">
+        <div>
+            <img src="./Project3/partb/denoisesig0.0.jpg">
+            \(t=0.0\)
+            <img src="./Project3/partb/denoisesig0.2.jpg">
+            \(t=0.2\)
+            <img src="./Project3/partb/denoisesig0.4.jpg">
+            \(t=0.4\)
+            <img src="./Project3/partb/denoisesig0.5.jpg">
+            \(t=0.5\)
+            <img src="./Project3/partb/denoisesig0.6.jpg">
+            \(t=0.6\)
+            <img src="./Project3/partb/denoisesig0.8.jpg">
+            \(t=0.8\) <b>FIXME</b>
+            <img src="./Project3/partb/denoisesig1.0.jpg">
+            \(t=1.0\)
+        </div>
+    </div>
+    <h3>1.2.3</h3>
+    As a bit of an experiment let's see if the model can garner any reasonable information by training on \(t=0\)
+    <div class="gallery">
+        <div>
+            <img src="./Project3/partb/denoise_loss.png">
+            Loss at each iteration <b>FIXME</b>
+            <img src="./Project3/partb/denoiseempty1.jpg">
+            Results after 1 epoch
+            <img src="./Project3/partb/denoiseempty5.jpg">
+            Results after 5 epochs
+        </div>
+    </div>
+    We can notice that the model tends to converge to displaying what looks like a blurry 8. This is farily reasonable because this is probably close to the average of all images in the dataset. Where most digits besides 1 tend to be some subsection of a figure 8. Arguably 4, and 7 as well depending on how their drawn.
+    <br/><br/>
+    Now that we've trained our denoiser we can start looking at making an actual flow model. One key thing that is missing from the model is encoding our \(t\) parameter. In other words, the model has no idea if it's looking at a noisy or clean image. Here we encode \(t\) by passing it into a fully connected layer and multiplying that output elementwise before each upscale step. In addition to this we change our loss to measure the difference between the model output and the velocity.
+    <div class="gallery">
+        <div>
+            <img src="./Project3/conditional_arch_fm.png">
+        </div>
+    </div>
+    <h3>2.2</h3>
+    <div class="gallery">
+        <div>
+            <img src="./Project3/partb/velocity T_loss.png">
+            Loss at each iteration
+        </div>
+    </div>
+    <h3>2.3</h3>
+    Now we can create more proper results from pure noise.
+    <div class="gallery">
+        <div>
+            <img src="./Project3/partb/traintimecondition1.jpg">
+            Results After 1 Epoch
+            <img src="./Project3/partb/traintimecondition5.jpg">
+            Results After 5 Epochs
+            <img src="./Project3/partb/traintimecondition10.jpg">
+            Results After 10 Epochs
+        </div>
+    </div>
+    Notably they actual resemble real digits.
+    <br/><br/>
+    Next we can add class conditioning. In MNIST this would be a one-hot vector encoding what digit we want to generate. We change our encoding to be the output of the class layer times the pre-upscale activation added with the output of the \(t\) layer.
+    <h3>2.5</h3>
+    <div class="gallery">
+        <div>
+            <img src="./Project3/partb/velocity T&C_loss.png">
+            Loss at each iteration
+        </div>
+    </div>
+    <h3>2.6</h3>
+    <div class="gallery">
+        <div>
+            <img src="./Project3/partb/traintimeclasscondition1.jpg">
+            Results After 1 Epoch
+            <img src="./Project3/partb/traintimeclasscondition5.jpg">
+            Results After 5 Epochs
+            <img src="./Project3/partb/traintimeclasscondition10.jpg">
+            Results After 10 Epochs
+        </div>
+    </div>
+    Something of note is in training a learning rate scheduler was used to help the model converge. One interesting experiment is can we remove this and change things about our model to achieve similar results? After some trial and error I found that increasing the hidden dimension of our model from 64 to 192 achieved similar results.
+    <div class="gallery">
+        <div>
+            <img src="./Project3/partb/traintimeclassconditionnosched1.jpg">
+            Results After 1 Epoch
+            <img src="./Project3/partb/traintimeclassconditionnosched5.jpg">
+            Results After 5 Epochs
+            <img src="./Project3/partb/traintimeclassconditionnosched10.jpg">
+            Results After 10 Epochs
+        </div>
+    </div>
+</body>
+<footer>
+    <div>ᕕ( ᐛ )ᕗ&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;ᕕ( ᐛ )ᕗ</div>
+    <span style="position: absolute; display: block; width: 100%; text-align: center;">Hello!!!</span>
+</footer>
+<script>
+    images = document.getElementsByTagName("img");
+    enlarge = document.getElementById("enlarge");
+    srcs = []
+    for (let i = 0; i < images.length; i++) {
+        srcs.push(images[i].src)
+        images[i].addEventListener("click", e => {
+            enlarge.innerHTML = "<img src=\"" + srcs[i] + "\"/>";
+            enlarge.style.display = "flex";
+        })
+    }
+
+    enlarge.addEventListener("click", e => {
+        enlarge.style.display = "none"
+    })
+</script>
+
+</html>
