@@ -38,7 +38,14 @@
         <img src="./Project4/set1/IMG_0802.jpg">
         <img src="./Project4/set1/IMG_0803.jpg">
     </div>
-    <b>TODO TAKE MORE PICTURES</b>
+    <div class="gallery">
+        <img src="./Project4/set2/IMG_0834.jpg">
+        <img src="./Project4/set2/IMG_0833.jpg">
+    </div>
+    <div class="gallery">
+        <img src="./Project4/set3/IMG_0840.jpg">
+        <img src="./Project4/set3/IMG_0838.jpg">
+    </div>
     <h2>Part A.2: Recover Homographies</h2>
     First we need to understand how to relate two images that only differ by a rotation.
     Naturally a rotation will lead to images appearing to be along different flat planes.
@@ -125,13 +132,31 @@
     <div class="gallery">
         <img src="./Project4/set1/warped1nn.jpg">
     </div>
-    Notably extremely warped edges have visible jagged edges upon close inspection (look around the table on the left).
+    <div class="gallery">
+        <img src="./Project4/set2/warped1nn.jpg">
+    </div>
+    <div class="gallery">
+        <img src="./Project4/set3/warped1nn.jpg">
+    </div>
+    Notably extremely warped edges have visible jagged edges upon close inspection (look around the table on the left in
+    the first image for a clear example).
+    This happens due to the fact that we're only mapping the nearest pixel to the inverse transform of the output
+    coordinate.
+    In reality this mapping rarely lies perfectly on an integer, so it only makes sense that we're losing information
+    when we just use the nearest pixel.
     We can solve this by using bilinear interpolation, which is where we use the weighted average of nearby pixels for
     the output pixel.
+    <br /><br />
+    Bilinear filtering
     <div class="gallery">
         <img src="./Project4/set1/warped1bilinear.jpg">
     </div>
-    <b>TODO TAKE MORE PICTURES</b><br />
+    <div class="gallery">
+        <img src="./Project4/set2/warped1bilinear.jpg">
+    </div>
+    <div class="gallery">
+        <img src="./Project4/set3/warped1bilinear.jpg">
+    </div>
     Visibly much better. This does come at the cost of some time however, taking nearly double the time for my Python
     implementation.
     <h2>Part A.4: Blend the Images into a Mosaic</h2>
@@ -139,8 +164,10 @@
     To do this I segmented the image into three parts: pixels belonging to the first image, both images, and the second.
     <div class="gallery">
         <div>
-            <img src="./Project4/set1/mask.jpg">
-            Mask of shared pixels
+            <img style="margin-bottom: 5px;" src="./Project4/set1/mask.jpg">
+            <img style="margin-bottom: 5px;" src="./Project4/set2/mask.jpg">
+            <img src="./Project4/set3/mask.jpg">
+            Mask of shared pixels for each panorama
         </div>
     </div>
     The first and third category are easy enough, just copy them over.
@@ -148,7 +175,7 @@
     To make the transition smooth I apply a weighted average based on how far each pixel is to each image.
     If our mask were a rectangle, pixels along the left side of the shared area are completely from the first image,
     pixels in the middle are a 50/50 split, and images on the far right are completely from the second.
-    But how do we actually do this. 
+    But how do we actually do this.
     We can use the scipy function distance_transform_edt (similar to the bwdist function in matlab).
     This function given a matrix of 1s and 0s, finds the distance to the closest 0 for each 1.
     This gives us a clean way to find the proportion of each image as the following:
@@ -163,9 +190,17 @@
         <div>
             <img src="./Project4/set1/output.jpg">
         </div>
+        <div>
+            <img src="./Project4/set2/output.jpg">
+        </div>
+        <div>
+            <img src="./Project4/set3/output.jpg">
+        </div>
     </div>
-    <b>TODO TAKE MORE PICTURES</b><br />
-    There is still some misalignment (I believe this may be due to human error when selecting correspondances, as when I made many more correspondances results usually improved), but visibly not too bad at all.
+    There is still some misalignment (I believe this may be due to human error when selecting correspondances, as when I
+    made many more correspondances results usually improved), but visibly not too bad at all.
+    It's also entirely possible its due to the distortion in the lens I was using but to my understanding the distortion
+    shouldn't be too bad.
 </body>
 <footer>
     <div>ᕕ( ᐛ )ᕗ&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;ᕕ( ᐛ )ᕗ</div>
