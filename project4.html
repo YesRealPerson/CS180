@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./blog.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
+    <title>Confluxes/CS180/P4</title>
+    <link rel="icon" href="./favicon.ico">
+</head>
+<div id="enlarge" style="display: none;">
+</div>
+
+<body>
+    <header>
+        Confluxes // CS180
+    </header>
+    <a href="./index.html">Home</a>
+    <nav>
+        <h2>Project 3</h2>
+    </nav>
+    <h3>Background</h3>
+    From the outside view the idea of a panorama seems somewhat trivial as we have a device in our pockets that can so
+    easily compute them. However, if upon thinking about how you would actually automate this process questions start to
+    arise.
+    For example, how do we actually make each individual image fit a single wider flat perspective? At that how do align
+    features within each image, espeically with human imperfection?<br />
+    <i>Click on any image to enlarge!</i>
+    <h2>Part A</h2>
+    First let's worry about creating panoramas from images that we already know where our features align.
+    <h2>Part A.1: Shoot the Pictures</h2>
+    First we actually need pictures to begin with. Below are pictures I took for this project.
+    <div class="gallery">
+        <img src="./Project4/set1/IMG_0802.jpg">
+        <img src="./Project4/set1/IMG_0803.jpg">
+    </div>
+    <b>TODO TAKE MORE PICTURES</b>
+    <h2>Part A.2: Recover Homographies</h2>
+    First we need to understand how to relate two images that only differ by a rotation.
+    Naturally a rotation will lead to images appearing to be along different flat planes.
+    It can be shown that we can apply a project transform, a homography, to align them.
+    But how do we calculate this homography?
+    We can estimate the transform by using least squares.
+    To apply least squares we need an equation in the format of \(Ax=b\).
+    We need to find a way to format the input and output as \(A\) and \(b\).
+    To setup the problem we first can explicitly write out the transformation assuming we have some homography matrix H
+    and with source and destination points.
+    $$\begin{bmatrix}
+    a & b & c \\
+    d & e & f \\
+    g & h & 1
+    \end{bmatrix}\begin{bmatrix}
+    x \\
+    y \\
+    1
+    \end{bmatrix}=\begin{bmatrix}
+    x \\
+    y \\
+    \lambda
+    \end{bmatrix}=\begin{bmatrix}
+    \frac{x'}{\lambda} \\
+    \frac{y'}{\lambda} \\
+    1
+    \end{bmatrix}$$
+    To find A let's start by expanding the matrix multiplicaton.
+    $$\lambda=xg+hy+1$$
+    $$\begin{align}
+    x'&=\frac{xa+by+c}{\lambda} \\
+    x'&=\frac{xa+by+c}{xg+hy+1} \\
+    x'xg+x'yh+x'&=xa+by+c \\
+    x'&=xa+by+c-x'xg-x'yh
+    \end{align}$$
+    $$\begin{align}
+    y'&=\frac{xd+ye+f}{xg+hy+1} \\
+    y'xg+y'yh+y'&=xd+ye+f \\
+    y'&=xd+ye+f-y'xg-y'yh
+    \end{align}$$
+    From here we can fix b as \(x'\) and \(y'\) and we can arrange the unknowns of \(H\) as \(x\) to make a reasonable
+    \(A\) matrix.
+    $$\begin{bmatrix}
+    x & y & 1 & 0 & 0 & 0 & -x'x & -x'y \\
+    0 & 0 & 0 & x & y & 1 & -y'x & -y'y \\
+    \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots
+    \end{bmatrix}\begin{bmatrix}
+    a \\
+    b \\
+    c \\
+    d \\
+    e \\
+    f \\
+    g \\
+    h
+    \end{bmatrix}=\begin{bmatrix}
+    x' \\
+    y' \\
+    \vdots
+    \end{bmatrix}$$
+    Finally we just apply least squares.
+    Below is the correspondences for the first image and the calculated \(H\).
+    <div class="gallery">
+        <img src="./Project4/set1/correspondences.jpg">
+    </div>
+    $$
+    \begin{bmatrix}
+    6.57 & -9.20 & -4.34 \\
+    2.50 & 4.12 & -2.92 \\
+    2.89 & -3.81 & 1.00
+    \end{bmatrix}
+    $$
+    <h2>Part A.3: Warp the Images</h2>
+    Now we can apply the homography.
+    To do this we want to apply an inverse warp to map output pixels to input pixels.
+    This prevents holes from appearing in the output as naturally not every input pixel perfectly maps to an output.
+    However, this also introduces another problem where the projection causes only a small portion of the image to be
+    used in the final panorama.
+    I solved this by simply doubling the width of the output canvas and translating the output pixel left by w (our
+    transformation becomes \((T @ H)^{-1}\) where \(T\) is a rightward translation by the width, which upon inverse
+    warping becomes a leftward translation).
+    <br /><br />
+    Here is our warped image.
+    <div class="gallery">
+        <img src="./Project4/set1/warped1nn.jpg">
+    </div>
+    Notably extremely warped edges have visible jagged edges upon close inspection (look around the table on the left).
+    We can solve this by using bilinear interpolation, which is where we use the weighted average of nearby pixels for
+    the output pixel.
+    <div class="gallery">
+        <img src="./Project4/set1/warped1bilinear.jpg">
+    </div>
+    <b>TODO TAKE MORE PICTURES</b><br />
+    Visibly much better. This does come at the cost of some time however, taking nearly double the time for my Python
+    implementation.
+    <h2>Part A.4: Blend the Images into a Mosaic</h2>
+    Finally we can begin blending.
+    To do this I segmented the image into three parts: pixels belonging to the first image, both images, and the second.
+    <div class="gallery">
+        <div>
+            <img src="./Project4/set1/mask.jpg">
+            Mask of shared pixels
+        </div>
+    </div>
+    The first and third category are easy enough, just copy them over.
+    The second category though is a bit more interesting.
+    To make the transition smooth I apply a weighted average based on how far each pixel is to each image.
+    If our mask were a rectangle, pixels along the left side of the shared area are completely from the first image,
+    pixels in the middle are a 50/50 split, and images on the far right are completely from the second.
+    But how do we actually do this. 
+    We can use the scipy function distance_transform_edt (similar to the bwdist function in matlab).
+    This function given a matrix of 1s and 0s, finds the distance to the closest 0 for each 1.
+    This gives us a clean way to find the proportion of each image as the following:
+    $$
+    w1=\frac{d1}{d1+d2}
+    $$
+    $$
+    w2=\frac{d2}{d1+d2}
+    $$
+    Putting this all together below are the output images!
+    <div class="gallery">
+        <div>
+            <img src="./Project4/set1/output.jpg">
+        </div>
+    </div>
+    <b>TODO TAKE MORE PICTURES</b><br />
+    There is still some misalignment (I believe this may be due to human error when selecting correspondances, as when I made many more correspondances results usually improved), but visibly not too bad at all.
+</body>
+<footer>
+    <div>ᕕ( ᐛ )ᕗ&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;ᕕ( ᐛ )ᕗ</div>
+    <span style="position: absolute; display: block; width: 100%; text-align: center;">Hello!!!</span>
+</footer>
+<script>
+    images = document.getElementsByTagName("img");
+    enlarge = document.getElementById("enlarge");
+    srcs = []
+    for (let i = 0; i < images.length; i++) {
+        srcs.push(images[i].src)
+        images[i].addEventListener("click", e => {
+            enlarge.innerHTML = "<img src=\"" + srcs[i] + "\"/>";
+            enlarge.style.display = "flex";
+        })
+    }
+
+    enlarge.addEventListener("click", e => {
+        enlarge.style.display = "none"
+    })
+</script>
+
+</html>
