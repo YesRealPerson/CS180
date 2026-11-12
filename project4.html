@@ -118,7 +118,7 @@
         <img src="./Project4/set3/correspondences.jpg">
     </div>
     This is the calculated \(H\) for the first image.
-    <br/>
+    <br />
     $$
     \begin{bmatrix}
     6.57 & -9.20 & -4.34 \\
@@ -209,6 +209,105 @@
     made many more correspondances results usually improved), but visibly not too bad at all.
     It's also entirely possible its due to the distortion in the lens I was using but to my understanding the distortion
     shouldn't be too bad.
+    <h2>Part B</h2>
+    To start off I took some new sets of images.
+    <div class="gallery">
+        <img src="./Project4/1076small.jpg">
+        <img src="./Project4/1077small.jpg">
+    </div>
+    <div class="gallery">
+        <img src="./Project4/1078small.jpg">
+        <img src="./Project4/1079small.jpg">
+    </div>
+    <div class="gallery">
+        <img src="./Project4/1080small.jpg">
+        <img src="./Project4/1081small.jpg">
+    </div>
+    <div class="gallery">
+        <img src="./Project4/1083small.jpg">
+        <img src="./Project4/1082small.jpg">
+    </div>
+    <h2>Part B.1</h2>
+    To begin I used a premade function to detect Harris corners in the image.
+    Notably however there are a lot of corners in the image and we want a good way to pick out strong corners that cover
+    a large area on the image.
+    I begin by culling the corners that have a strength of less than 0.05 (I chose this somewhat arbitrarily but it
+    works as you'll see).
+    Then I implemented Adaptive Non-Maximal Suppression or ANMS.
+    The core idea behind ANMS is that we want to find significantly strong corners that are far away enough from other
+    strong corners.
+    First we sort by the strength of each corner, then we check all corners stronger than it and find the closest point
+    that is significantly stronger.
+    The paper ANMS originates from defines significantly stronger as 0.9 times the strength of the new corner being
+    greater than the target corner.
+    I do this for all detected corners and sort by their distance to deteted corner. Finally we just pull out the top
+    500 points.
+    Below are the top 100 corners with and without ANMS.
+    <div class="gallery">
+        <img src="./Project4/1076-1077pano/im2rawcorners.jpg">
+        <img src="./Project4/1076-1077pano/im2anmscorners.jpg">
+    </div>
+    <div class="gallery">
+        <img src="./Project4/1080-1081pano/im2rawcorners.jpg">
+        <img src="./Project4/1080-1081pano/im2anmscorners.jpg">
+    </div>
+    They are notably much more spread out across the entire image.
+    <h2>Part B.2</h2>
+    Now that we have these corners we need to figure out which ones match with each other.
+    The first step in doing this is making feature descriptors for each corner.
+    To do this we simply take a small area around each corner. However, we don't want these features to be too large so
+    we can make a downsampled version.
+    First we take the original image, blur it, then take a 40x40 grid centered at the corner position, and finally sampe
+    every 5th pixel.
+    Then we normalize the patches by subtracting by its mean and dividing by its standard deviation.
+    <div class="gallery">
+        <img src="./Project4/1080-1081pano/features.jpg">
+        <img src="./Project4/1080-1081pano/featuresonimg.jpg">
+    </div>
+    <h2>Part B.3</h2>
+    Using these features we can begin matching features together.
+    To do this I use nearest neighbors with a little bit of extra work.
+    First, I record the top 2 nearest neighbors between pairs of features between both images.
+    Second, if between the top 2 nearest neighbors there's a clear winner.
+    I calculate this as if 1's strength divided by 2's is greater than a threshold, I chose 0.6.
+    Third, check if both patches agree that they are each other's first nearest neighbor.
+    If all these checks pass then we add it to the selected point list.
+    <div class="gallery">
+        <img src="./Project4/1080-1081pano/matches.jpg">
+        <img src="./Project4/1076-1077pano/matches.jpg">
+    </div>
+    <div class="gallery">
+        <img src="./Project4/1078-1079pano/matches.jpg">
+        <img src="./Project4/1083-1082pano/matches.jpg">
+    </div>
+    <h2>Part B.4</h2>
+    However, it is still entirely possible that this set of matches has outliers.
+    Evidently there are some in my own examples.
+    To elimante bad matches I implement RANSAC.
+    The algorithm is as follows:
+    first, choose a random four points corners and construct the homography;
+    second, we project all corner points onto their match and find the distance between the projection and actual, if
+    this is less than a threshold we add it to an inliers list;
+    third, we simply keep track of the homography that generates the most inliers.
+    Below are the generated panoramas.
+    <div class="gallery">
+        <img src="./Project4/1080-1081pano/output.jpg">
+    </div>
+    <div class="gallery">
+        <img src="./Project4/1076-1077pano/output.jpg">
+    </div>
+    <div class="gallery">
+        <img src="./Project4/1078-1079pano/output.jpg">
+    </div>
+    <div class="gallery">
+        <img src="./Project4/1083-1082pano/output.jpg">
+    </div>
+    This is a manual version of the second panorama.
+    <div class="gallery">
+        <img src="./Project4/1076-77panomanual.jpg">
+    </div>
+    This image actually turns out is extremely difficult for my code to create a good panorama for due to the general repetitveness of the image itself.
+    Constant repeated features (lights, railings, pillars) make it very difficult to find good feature matches for.
 </body>
 <footer>
     <div>ᕕ( ᐛ )ᕗ&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;ᕕ( ᐛ )ᕗ</div>
